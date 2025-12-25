@@ -1,0 +1,42 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+laravel:
+  base_url: "http://laravel-api:8000/api/v1"
+  timeout: 5s
+  retry_attempts: 3
+  retry_delay: 100ms
+
+redis:
+  host: "redis:6379"
+  password: ""
+  db: 0
+  pool_size: 100
+  min_idle_conns: 10
+
+cache:
+  manifest_ttl: 10s
+  ad_decision_ttl: 60s
+  vast_ttl: 5m
+
+logging:
+  level: "info" # debug, info, warn, error
+  format: "json" # json, text
+
+metrics:
+  enabled: true
+  path: "/metrics"
+
+rate_limiting:
+  enabled: true
+  requests_per_minute: 10000
+
+origins:
+  # Map tenant to origin CDN
+  default: "https://cdn.example.com"
+  # tenant_specific:
+  #   ott_a: "https://cdn-ott-a.example.com"
+

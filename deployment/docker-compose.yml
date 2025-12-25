@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: fast-ads-postgres
+    environment:
+      POSTGRES_DB: fast_ads
+      POSTGRES_USER: fast_ads_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fast_ads_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fast-ads-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: fast-ads-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fast-ads-network
+
+  # Laravel API (Control Plane)
+  laravel-api:
+    build:
+      context: ../laravel-backend
+      dockerfile: Dockerfile
+    container_name: fast-ads-laravel
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: fast_ads
+      DB_USERNAME: fast_ads_user
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - ../laravel-backend:/var/www/html
+      - laravel_storage:/var/www/html/storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fast-ads-network
+    command: >
+      sh -c "
+        php artisan migrate --force &&
+        php artisan config:cache &&
+        php artisan route:cache &&
+        php-fpm
+      "
+
+  # Golang SSAI Service (Data Plane)
+  golang-ssai:
+    build:
+      context: ../golang-ssai
+      dockerfile: Dockerfile
+    container_name: fast-ads-ssai
+    environment:
+      CONFIG_PATH: /app/configs/config.yaml
+      GIN_MODE: release
+    volumes:
+      - ../golang-ssai/configs:/app/configs
+    ports:
+      - "8080:8080"
+    depends_on:
+      - laravel-api
+      - redis
+    networks:
+      - fast-ads-network
+    restart: unless-stopped
+
+  # Nginx (Reverse Proxy / Load Balancer)
+  nginx:
+    image: nginx:alpine
+    container_name: fast-ads-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - laravel-api
+      - golang-ssai
+    networks:
+      - fast-ads-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  laravel_storage:
+
+networks:
+  fast-ads-network:
+    driver: bridge
+

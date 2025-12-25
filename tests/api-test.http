@@ -1,0 +1,103 @@
+### FAST Ads Backend - API Test Collection
+### Use with REST Client extension in VS Code or similar
+
+@baseUrl = http://localhost:8000
+@apiKey = test_api_key_123
+
+### 1. Ad Decision API - Pre-roll
+POST {{baseUrl}}/api/v1/ads/decision
+X-API-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+    "tenant_id": 1,
+    "channel": "news",
+    "ad_break_id": "break_123",
+    "position": "pre-roll",
+    "duration_seconds": 30,
+    "geo": "US",
+    "device": "android_tv",
+    "timestamp": "2024-01-15T10:30:00Z"
+}
+
+### 2. Ad Decision API - Mid-roll
+POST {{baseUrl}}/api/v1/ads/decision
+X-API-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+    "tenant_id": 1,
+    "channel": "news",
+    "ad_break_id": "break_456",
+    "position": "mid-roll",
+    "duration_seconds": 120,
+    "geo": "US",
+    "device": "android_tv"
+}
+
+### 3. VMAP Generation (CSAI)
+GET {{baseUrl}}/api/v1/ads/vmap/ott_a/news?geo=US&device=android_tv
+X-API-Key: {{apiKey}}
+Accept: application/vmap+xml
+
+### 4. VAST Generation - Pre-roll
+GET {{baseUrl}}/api/v1/ads/vast/ott_a/news?position=pre-roll&geo=US
+X-API-Key: {{apiKey}}
+Accept: application/vast+xml
+
+### 5. VAST Generation - Mid-roll
+GET {{baseUrl}}/api/v1/ads/vast/ott_a/news?position=mid-roll&geo=US
+X-API-Key: {{apiKey}}
+Accept: application/vast+xml
+
+### 6. Tracking Event - Impression
+POST {{baseUrl}}/api/v1/tracking/events
+X-API-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+    "events": [
+        {
+            "tenant_id": 1,
+            "channel_id": 1,
+            "ad_id": 1,
+            "event_type": "impression",
+            "session_id": "session_abc123",
+            "device_type": "android_tv",
+            "geo_country": "US",
+            "ip_address": "192.168.1.1",
+            "user_agent": "Mozilla/5.0",
+            "timestamp": "2024-01-15T10:30:00Z"
+        }
+    ]
+}
+
+### 7. Tracking Event - Complete
+POST {{baseUrl}}/api/v1/tracking/events
+X-API-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+    "events": [
+        {
+            "tenant_id": 1,
+            "ad_id": 1,
+            "event_type": "complete",
+            "timestamp": "2024-01-15T10:30:30Z"
+        }
+    ]
+}
+
+### 8. Error Test - Invalid API Key
+POST {{baseUrl}}/api/v1/ads/decision
+X-API-Key: invalid_key
+Content-Type: application/json
+
+{
+    "tenant_id": 1,
+    "channel": "news",
+    "ad_break_id": "test",
+    "position": "pre-roll",
+    "duration_seconds": 30
+}
+

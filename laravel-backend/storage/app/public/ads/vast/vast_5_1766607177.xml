@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Ad id="5">
+    <InLine>
+      <AdSystem version="1.0">FAST Ads Backend</AdSystem>
+      <AdTitle>tolaklinu</AdTitle>
+      <Description>tolaklinu</Description>
+      <Impression><![CDATA[http://localhost:8000/api/v1/tracking/events?ad_id=5&event_type=impression]]></Impression>
+      <Creatives>
+        <Creative id="creative_5" sequence="1">
+          <Linear>
+            <Duration>00:00:05</Duration>
+            <TrackingEvents>
+              <Tracking event="start"><![CDATA[http://localhost:8000/api/v1/tracking/events?ad_id=5&event_type=start]]></Tracking>
+              <Tracking event="firstQuartile"><![CDATA[http://localhost:8000/api/v1/tracking/events?ad_id=5&event_type=first_quartile]]></Tracking>
+              <Tracking event="midpoint"><![CDATA[http://localhost:8000/api/v1/tracking/events?ad_id=5&event_type=midpoint]]></Tracking>
+              <Tracking event="thirdQuartile"><![CDATA[http://localhost:8000/api/v1/tracking/events?ad_id=5&event_type=third_quartile]]></Tracking>
+              <Tracking event="complete"><![CDATA[http://localhost:8000/api/v1/tracking/events?ad_id=5&event_type=complete]]></Tracking>
+            </TrackingEvents>
+            <MediaFiles>
+              <MediaFile id="media_5_hls" delivery="streaming" type="application/x-mpegURL" bitrate="2000" width="1920" height="1080">
+                <![CDATA[http://localhost:8000/storage/ads/hls/5/video.m3u8]]>
+              </MediaFile>
+            </MediaFiles>
+          </Linear>
+        </Creative>
+      </Creatives>
+    </InLine>
+  </Ad>
+</VAST>
