@@ -23,6 +23,8 @@ yarn-error.log
 *.test
 *.out
 go.work
+*.tar.gz
+go*.linux-amd64.tar.gz
 
 # IDE
 .idea/
